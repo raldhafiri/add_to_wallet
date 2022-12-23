@@ -34,7 +34,6 @@ class PKAddPassButtonNativeViewFactory: NSObject, FlutterPlatformViewFactory {
 
 class PKAddPassButtonNativeView: NSObject, FlutterPlatformView {
     private var _view: UIView
-    private var _pass: [UInt8]
     private var _width: CGFloat
     private var _height: CGFloat
     private var _key: String
@@ -48,13 +47,13 @@ class PKAddPassButtonNativeView: NSObject, FlutterPlatformView {
         channel: FlutterMethodChannel
     ) {
         _view = UIView()
-        _pass = args["pass"] as! [UInt8]
         _width = args["width"] as? CGFloat ?? 140
         _height = args["height"] as? CGFloat ?? 30
         _key = args["key"] as! String
         _channel = channel
         super.init()
         createAddPassButton()
+        addMethodHandler()
     }
 
     func view() -> UIView {
@@ -68,13 +67,28 @@ class PKAddPassButtonNativeView: NSObject, FlutterPlatformView {
         _view.addSubview(passButton)
     }
 
+    func addMethodHandler() {
+        _channel.setMethodCallHandler { [weak self] call, result in
+            if call.method == AddToWalletEvent.addPassToWallet.rawValue {
+                guard let self = self, let passData = call.arguments as? FlutterStandardTypedData else {
+                    fatalError()
+                }
+
+                self.addToPass(passData);
+            }
+        }
+    }
+
     @objc func passButtonAction() {
+        _channel.invokeMethod(AddToWalletEvent.addButtonPressed.rawValue, arguments: ["key": _key])
+    }
+
+    func addToPass(_ passData: FlutterStandardTypedData) {
         var newPass: PKPass
         do {
-            let data = NSData(bytes: &_pass, length: _pass.count)
-            newPass = try PKPass(data: data as Data)
+            newPass = try PKPass(data: passData.data as Data)
         } catch {
-            print("No valid Pass data passed")
+            fatalError("No valid Pass data passed")
             return
         }
         guard let addPassViewController = PKAddPassesViewController(pass: newPass) else {
@@ -87,11 +101,6 @@ class PKAddPassButtonNativeView: NSObject, FlutterPlatformView {
             return
         }
         rootVC.present(addPassViewController, animated: true)
-        _invokeAddButtonPressed()
-    }
-    
-    func _invokeAddButtonPressed() {
-        _channel.invokeMethod(AddToWalletEvent.addButtonPressed.rawValue, arguments: ["key": _key])
     }
 }
 

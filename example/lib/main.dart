@@ -52,12 +52,12 @@ class _MyAppState extends State<MyApp> {
               Text('A single button app!'),
               if (_passLoaded)
                 AddToWalletButton(
-                  pkPass: _pkPassData,
                   width: 150,
                   height: 30,
                   unsupportedPlatformChild: DownloadPass(pkPass: _pkPassData),
                   onPressed: () {
                     print("🎊Add to Wallet button Pressed!🎊");
+                    return _pkPassData;
                   },
                 ),
             ],
@@ -79,7 +79,8 @@ class DownloadPass extends StatelessWidget {
   }
 
   void _onPressed() async {
-    print("The button was pressed, we could let the user download the pass for instance!");
+    print(
+        "The button was pressed, we could let the user download the pass for instance!");
     File passFile = await writePassFile();
     Share.shareFiles([passFile.path], text: "Here is your pkPass!");
   }

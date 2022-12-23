@@ -9,4 +9,5 @@ import Foundation
 
 enum AddToWalletEvent: String {
     case addButtonPressed = "add_button_pressed"
+    case addPassToWallet = "addPassToWallet"
 }

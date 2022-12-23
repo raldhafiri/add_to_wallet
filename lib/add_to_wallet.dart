@@ -6,11 +6,13 @@ export 'widgets/add_to_wallet_button.dart';
 
 class AddToWallet {
   static const MethodChannel _channel = const MethodChannel('add_to_wallet');
+  static const _addPassToWalletMethod = "addPassToWallet";
 
   static final AddToWallet _instance = AddToWallet._internal();
 
   /// Associate each rendered Widget to its `onPressed` event handler
-  static final Map<String, FutureOr<dynamic> Function(MethodCall)> _handlers = Map();
+  static final Map<String, FutureOr<dynamic> Function(MethodCall)> _handlers =
+      Map();
 
   factory AddToWallet() {
     return _instance;
@@ -27,11 +29,16 @@ class AddToWallet {
     return handler != null ? await handler(call) : null;
   }
 
-  Future<void> addHandler<T>(String key, FutureOr<T> Function(MethodCall) handler) async {
+  Future<void> addHandler<T>(
+      String key, FutureOr<T> Function(MethodCall) handler) async {
     _handlers[key] = handler;
   }
 
   void removeHandler(String key) {
     _handlers.remove(key);
+  }
+
+  void addPassToWallet(List<int> pkPass) async {
+    _channel.invokeMethod(_addPassToWalletMethod, pkPass);
   }
 }
