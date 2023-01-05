@@ -69,12 +69,19 @@ class PKAddPassButtonNativeView: NSObject, FlutterPlatformView {
 
     func addMethodHandler() {
         _channel.setMethodCallHandler { [weak self] call, result in
+            guard let self = self else {
+                result(FlutterError(
+                    code: "OBJECT_DEALLOCATED",
+                    message: "The AddToWallet object was deallocated",
+                    details: nil
+                ))
+                return
+            }
+            
             if call.method == AddToWalletEvent.addPassToWallet.rawValue {
-                guard let self = self, let passData = call.arguments as? FlutterStandardTypedData else {
-                    fatalError()
-                }
-
-                self.addToPass(passData);
+                self.addToPass(call.arguments, result: result);
+            } else {
+                result(FlutterMethodNotImplemented)
             }
         }
     }
@@ -83,24 +90,58 @@ class PKAddPassButtonNativeView: NSObject, FlutterPlatformView {
         _channel.invokeMethod(AddToWalletEvent.addButtonPressed.rawValue, arguments: ["key": _key])
     }
 
-    func addToPass(_ passData: FlutterStandardTypedData) {
-        var newPass: PKPass
+    func addToPass(_ callArguments: Any?, result: @escaping FlutterResult) {
+        guard PKAddPassesViewController.canAddPasses() else {
+            result(FlutterError(
+                code: "ADD_TO_WALLET_NOT_SUPPORTED",
+                message: "This device does not support Add to Wallet",
+                details: nil
+            ))
+            return
+        }
+        
+        guard let data = (callArguments as? FlutterStandardTypedData)?.data else {
+            result(FlutterError(
+                code: "INVALID_ARGUMENT",
+                message: "Expected type FlutterStandardDataType, got \(type(of: callArguments))",
+                details: nil
+            ))
+            return
+        }
+        
+        let newPass: PKPass
+        
         do {
-            newPass = try PKPass(data: passData.data as Data)
+            newPass = try PKPass(data: data)
         } catch {
-            fatalError("No valid Pass data passed")
+            result(FlutterError(
+                code: "INVALID_DATA",
+                message: error.localizedDescription,
+                details: nil
+            ))
             return
         }
+        
         guard let addPassViewController = PKAddPassesViewController(pass: newPass) else {
-            print("View controller messed up")
+            result(FlutterError(
+                code: "UNABLE_TO_CREATE_ADD_TO_WALLET_VC",
+                message: "Failed to create PKAddPassesViewController",
+                details: nil
+            ))
             return
         }
-
         guard let rootVC = UIApplication.shared.keyWindow?.rootViewController else {
-            print("Root VC unavailable")
+            result(FlutterError(
+                code: "UNABLE_TO_GET_ROOT_VC",
+                message: "Unable to get View Controller for presentation",
+                details: nil
+            ))
             return
         }
-        rootVC.present(addPassViewController, animated: true)
+        
+        rootVC.present(addPassViewController, animated: true) {
+            result(nil)
+        }
     }
 }
 

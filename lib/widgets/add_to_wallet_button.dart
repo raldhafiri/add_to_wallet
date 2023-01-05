@@ -14,15 +14,17 @@ class AddToWalletButton extends StatefulWidget {
   final double height;
   final Widget? unsupportedPlatformChild;
   final FutureOr<List<int>> Function() onPressed;
+  final void Function(PlatformException) onError;
   final String _id = Uuid().v4();
 
-  AddToWalletButton(
-      {Key? key,
-      required this.width,
-      required this.height,
-      required this.onPressed,
-      this.unsupportedPlatformChild})
-      : super(key: key);
+  AddToWalletButton({
+    Key? key,
+    required this.width,
+    required this.height,
+    required this.onPressed,
+    required this.onError,
+    this.unsupportedPlatformChild,
+  }) : super(key: key);
 
   @override
   _AddToWalletButtonState createState() => _AddToWalletButtonState();
@@ -44,8 +46,13 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
       setState(() {
         _loading = true;
       });
-      final pkPass = await widget.onPressed();
-      AddToWallet().addPassToWallet(pkPass);
+      try {
+        final pkPass = await widget.onPressed();
+        await AddToWallet().addPassToWallet(pkPass);
+      } on PlatformException catch (e) {
+        widget.onError(e);
+      } catch (e) {}
+
       setState(() {
         _loading = false;
       });

@@ -38,7 +38,7 @@ class AddToWallet {
     _handlers.remove(key);
   }
 
-  void addPassToWallet(List<int> pkPass) async {
-    _channel.invokeMethod(_addPassToWalletMethod, pkPass);
+  Future<void> addPassToWallet(List<int> pkPass) async {
+    await _channel.invokeMethod(_addPassToWalletMethod, pkPass);
   }
 }
