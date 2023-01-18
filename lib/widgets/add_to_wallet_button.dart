@@ -13,7 +13,7 @@ class AddToWalletButton extends StatefulWidget {
   final double width;
   final double height;
   final Widget? unsupportedPlatformChild;
-  final Future<dynamic> Function() onPressed;
+  final FutureOr<dynamic> Function() onPressed;
   final void Function(PlatformException)? onError;
   final String _id = Uuid().v4();
 
