@@ -13,7 +13,7 @@ class AddToWalletButton extends StatefulWidget {
   final double width;
   final double height;
   final Widget? unsupportedPlatformChild;
-  final FutureOr<dynamic> Function() onPressed;
+  final Future<dynamic> Function() onPressed;
   final void Function(PlatformException)? onError;
   final String _id = Uuid().v4();
 
@@ -21,7 +21,7 @@ class AddToWalletButton extends StatefulWidget {
     Key? key,
     this.width = 320,
     this.height = 48,
-    this.onPressed,
+    required this.onPressed,
     this.onError,
     this.unsupportedPlatformChild,
   }) : super(key: key);
