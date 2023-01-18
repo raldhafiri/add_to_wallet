@@ -13,16 +13,16 @@ class AddToWalletButton extends StatefulWidget {
   final double width;
   final double height;
   final Widget? unsupportedPlatformChild;
-  final Future<dynamic> Function() onPressed;
-  final void Function(PlatformException)? onError;
+  final FutureOr<List<int>> Function() onPressed;
+  final void Function(PlatformException) onError;
   final String _id = Uuid().v4();
 
   AddToWalletButton({
     Key? key,
-    this.width = 320,
-    this.height = 48,
+    required this.width,
+    required this.height,
     required this.onPressed,
-    this.onError,
+    required this.onError,
     this.unsupportedPlatformChild,
   }) : super(key: key);
 
@@ -47,10 +47,10 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
         _loading = true;
       });
       try {
-        await widget.onPressed?.call();
-        await AddToWallet().addPassToWallet([]);
+        final pkPass = await widget.onPressed();
+        await AddToWallet().addPassToWallet(pkPass);
       } on PlatformException catch (e) {
-        widget.onError?.call(e);
+        widget.onError(e);
       } catch (e) {}
 
       setState(() {
@@ -96,7 +96,8 @@ class _AddToWalletButtonState extends State<AddToWalletButton> {
         );
 
       default:
-        if (widget.unsupportedPlatformChild == null) throw UnsupportedError('Unsupported platform view');
+        if (widget.unsupportedPlatformChild == null)
+          throw UnsupportedError('Unsupported platform view');
         return widget.unsupportedPlatformChild!;
     }
   }
