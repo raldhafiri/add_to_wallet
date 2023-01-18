@@ -21,7 +21,7 @@ class AddToWalletButton extends StatefulWidget {
     Key? key,
     this.width = 320,
     this.height = 48,
-    this.onPressed,
+    required this.onPressed,
     this.onError,
     this.unsupportedPlatformChild,
   }) : super(key: key);
